@@ -1,22 +1,25 @@
+const fs = require ('fs')
 class ProductManager{
     
-    constructor (){
+    constructor (filename){
        
         this.products= []
-    //     this.path = filename;
-    //     if (fs.existsSync(filename)) {
-    //       this.productos = JSON.parse(fs.readFileSync(filename));
-    //     } else {
-    //       fs.writeFileSync(filename, JSON.stringify([]))
-    //     }
+         this.path = filename;
+     //   if (fs.existsSync(filename)) {
+      //     this.productos = JSON.parse(fs.readFileSync(filename));
+       //  } else {
+        //   fs.writeFileSync(filename, JSON.stringify([]))
+       // }
+        
 
     }   
     
 
     static id = 0
         
-    addProducts =({title,description,price,thumbnails,code,stock} ) => {
-           if(!title || !description || !thumbnails || !price || !code || !stock){
+    addProducts =async ({title,description,price,thumbnails,code,stock} ) => {
+           try {
+            if(!title || !description || !thumbnails || !price || !code || !stock){
                 return console.log("Rellenar campos requeridos");
             }
 
@@ -36,63 +39,91 @@ class ProductManager{
                 id : ProductManager.id
             }
             this.products.push(product)
-            const fs = require ('fs')
+           console.log(this.products);
 
-          const archivo = fs.promises.writeFile('./productos.json' , JSON.stringify(newProduct , null , 2))
-          .then(()=>console.log("Se escribieron los productos")).catch((err)=>console.log(err))
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products) , 'utf-8')
+                     
             
-            
-            
+           
+           } catch (error) {
+            console.log(error);
+           }
         
         }
- 
+        
         getProducts = ()=> console.log(this.products);
-        getProductById = (id) =>{
-            let oneProduct = this.products.filter(product => product.id === id)
-            if(oneProduct.length > 0){
-                 return  console.log(oneProduct)
-            } else{
-             console.log("Not Found");
-            }
+        getProductById = async (id) =>{
+           try {
+         let lectura= await fs.promises.readFile(this.path, 'utf-8')
+         let lecturaParse = JSON.parse(lectura)
+      
+        let productoFiltrado=lecturaParse.filter(product => product.id === id)
+        console.log(productoFiltrado[0]);
+           } catch (error) {
+                console.log(error);
+           }
          
          }
 
-         deleteProduct = (id)=>{
-            if (this.products.id === id){
-               let borrarObjeto = this.products.findIndex(products => products === id)
-               this.products.slice(()=>{
-                    fs.promises.writeFile('./productos.json', borrarObjeto ,  'utf-8')
-               })
-            }else{
-                    console.log("Error")
-            }
-          }
-
-         updateProduct = (id)=>{
-             let objetoEncontrado = this.products.find((products) => products.id === id)
-
-            if (objetoEncontrado) {
-                objetoEncontrado.id= id
-                this.products =this.products.map((products)=>{
-                    if (products.id === id) {
-                        return objetoEncontrado
-                    } else {
-                        return console.log("error");
-                    }
-                })
-            } 
+         deleteProduct = async(id)=>{
+        try {
+            let lectura= await fs.promises.readFile(this.path, 'utf-8')
+            let lecturaParse = JSON.parse(lectura)
+         
+             let productoFiltrado=lecturaParse.filter(product => product.id === id)
+             if (productoFiltrado.length === 0) {
+               return console.log("No existe ningun producto con este ID");
+             }
+             let productoIndice =lecturaParse.findIndex(e => e.id === id)
+             lecturaParse.splice(productoIndice , 1)
+             console.log(lecturaParse);
+             await fs.promises.writeFile(this.path ,JSON.stringify(lecturaParse) ,'utf-8' )
+             console.log("Se elimino correctamente");
             
+        } catch (error) {
+                console.log(error);
+        } 
+        
+        }
+
+         updateProduct =async ({id , title ,description,price,thumbnails,code,stock})=>{
+            
+            try {
+                let lectura= await fs.promises.readFile(this.path, 'utf-8')
+                let lecturaParse = JSON.parse(lectura)
+             
+                 let productoFiltrado=lecturaParse.filter(product => product.id === id)
+                 if (productoFiltrado.length === 0) {
+                    return console.log("No existe ningun producto con este ID");
+                  }
+                let productoModificado = {
+                    title: title || productoFiltrado [ 0 ].title,
+                    description: description || productoFiltrado [0].description,
+                    price: price || productoFiltrado[0].price,
+                    thumbnails: productoFiltrado|| thumbnails[0].thumbnails,
+                    code : code || productoFiltrado[0].code,
+                    stock : stock || productoFiltrado [0].stock
+                }
+                await fs.promises.writeFile( this.path , JSON.stringify(lecturaParse) , 'utf-8')
+                 console.log("Producto modificado correctamente");
+            } catch (error) {
+                console.log(error);
+            }
+
+
          }
 
         
 }
 
-const newProduct = new ProductManager ()
+const newProduct = new ProductManager ("productos.json")
 newProduct.addProducts ({title:"tomate" , description :"Fruta versatil" , price : "300 el kilo" , thumbnails:"Sin imagen" , code:"t1" , stock:3 })
-newProduct.addProducts ({title:"cebolla" , description :"Verdura verde y versatil" , price : "250 el kilo" , thumbnails:"Sin imagen" , code:"C1" , stock:7 }) 
-newProduct.getProducts()
-newProduct.deleteProduct(id = 1)
-newProduct.updateProduct(1)
+newProduct.addProducts ({title:"cebolla" , description :"Verdura verde y versatil" , price : "250 el kilo" , thumbnails:"Sin imagen" , code:"C1" , stock:7 })
+//newProduct.addProducts ({title:"cebolla" , description :"Verdura verde y versatil" , price : "250 el kilo" , thumbnails:"Sin imagen" , code:"C1" , stock:7 })  
+//newProduct.getProducts()
+//newProduct.getProductById(2)
+//newProduct.deleteProduct(1)
+newProduct.updateProduct({id:2 , title : "remolacha"})
 
 
 
