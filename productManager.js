@@ -104,8 +104,9 @@ class ProductManager{
                     code : code || productoFiltrado[0].code,
                     stock : stock || productoFiltrado [0].stock
                 }
-                await fs.promises.writeFile( this.path , JSON.stringify(lecturaParse) , 'utf-8')
-                 console.log("Producto modificado correctamente");
+                lecturaParse.splice(productoFiltrado , 1 , productoModificado)
+                await fs.promises.writeFile(this.path ,JSON.stringify(lecturaParse) ,'utf-8' )
+                console.log("Se modifico correctamente");
             } catch (error) {
                 console.log(error);
             }
@@ -119,11 +120,10 @@ class ProductManager{
 const newProduct = new ProductManager ("productos.json")
 newProduct.addProducts ({title:"tomate" , description :"Fruta versatil" , price : "300 el kilo" , thumbnails:"Sin imagen" , code:"t1" , stock:3 })
 newProduct.addProducts ({title:"cebolla" , description :"Verdura verde y versatil" , price : "250 el kilo" , thumbnails:"Sin imagen" , code:"C1" , stock:7 })
-//newProduct.addProducts ({title:"cebolla" , description :"Verdura verde y versatil" , price : "250 el kilo" , thumbnails:"Sin imagen" , code:"C1" , stock:7 })  
-//newProduct.getProducts()
-//newProduct.getProductById(2)
-//newProduct.deleteProduct(1)
-newProduct.updateProduct({id:2 , title : "remolacha"})
+newProduct.getProducts()
 
+newProduct.getProductById(1)
+newProduct.deleteProduct(2)
+newProduct.updateProduct({id:2 , description:"Verdura."})
 
 
